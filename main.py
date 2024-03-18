@@ -1,5 +1,6 @@
 
 import sys
+import os
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QListWidget
 from PyQt5.QtWidgets import QDialog, QLineEdit, QVBoxLayout, QPushButton, QLabel, QGridLayout
 from openai import OpenAI
@@ -57,7 +58,7 @@ class AIAssistantGUI(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.initHomepage()
-        self.client = OpenAI(api_key="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")  # Replace with your actual API key
+        self.client = OpenAI(api_key=os.environ['API_KEY'])  # Replace with your actual API key
         self.sectionInputs = {}  # Dictionary to track sections nd their inputs
         self.sentInputs = {}  # Dictionary to track if inputs have been sent
 
