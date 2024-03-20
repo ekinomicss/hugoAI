@@ -2,11 +2,11 @@
 import sys
 import os
 from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QListWidget
-from PyQt5.QtWidgets import QDialog, QLineEdit, QVBoxLayout, QPushButton, QLabel, QGridLayout
+from PyQt5.QtWidgets import QDialog, QLineEdit, QVBoxLayout, QPushButton, QLabel, QGridLayout,QListWidgetItem
 from openai import OpenAI
 from PyQt5.QtCore import QEvent
 from PyQt5.QtGui import QIcon, QTextCursor, QPixmap
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt,pyqtSignal
 from openai import OpenAI
 from gmail import getGmail
 
@@ -69,21 +69,33 @@ class AIAssistantGUI(QMainWindow):
 
         # Main layout
         mainLayout = QHBoxLayout()
+        self.sidebar = QListWidget()
 
         # Sidebar
-        self.sidebar = QListWidget()
-        self.sidebar.addItem("Home")
-        self.sidebar.addItem("Integrations")
-        self.sidebar.addItem("Create")
-        self.sidebar.addItem("Settings")
+        icons = ['C:/Users/zorer/Downloads/house.png', 'C:/Users/zorer/Downloads/pie-chart.png', 'C:/Users/zorer/Downloads/edit.png',
+                 'C:/Users/zorer/Downloads/settings.png']
+        for i, item_text in enumerate([" Home", " Integrations", " Create", " Settings"]):
+            item = QListWidgetItem(item_text)
+            item.setIcon(QIcon(icons[i]))
+            # Add the item to the sidebar
+            self.sidebar.addItem(item)
+
         self.sidebar.itemClicked.connect(self.onSidebarItemClicked)
         self.sidebar.setFixedWidth(300)
-        # self.sidebar.setStyleSheet("""
-        #     QListWidget::item {
-        #         padding-top: 110px;
-        #         padding-bottom: 110px;
-        #     }
-        # """)
+        self.sidebar.setStyleSheet("""
+            QListWidget {
+                background-color: rgba(240,240,240,255);
+                border: none;
+            }
+            QListWidget::item {
+                color: rgb(277,277,277);
+                padding-top:220px;
+                font-size:30px;
+                font-family: 'Helvetica'; 
+                font-weight: bold; 
+    }
+        """)
+
         # Existing layout for text edit and button
         layout = QVBoxLayout()
 
@@ -123,15 +135,15 @@ class AIAssistantGUI(QMainWindow):
       self.lastText = currentText
 
     def onSidebarItemClicked(self, item):
-        if item.text() == "Create":
+        if item.text() == " Create":
             self.createNew()
         elif item.text() in self.sectionInputs:
             self.editSection(item.text())
-        if item.text() == "Integrations":
+        if item.text() == " Integrations":
             self.integrationsWindow = Integrations(self)
             self.integrationsWindow.show()
             self.hide()
-        if item.text() == "Home":
+        if item.text() == " Home":
             self.homeWindow = AIAssistantGUI()
             self.homeWindow.show()
             self.hide()
@@ -204,6 +216,20 @@ class AIAssistantGUI(QMainWindow):
         self.textEdit.append(ekin_input_html)
         self.textEdit.moveCursor(QTextCursor.End)
 
+
+class ClickableLabel(QLabel):
+    clicked = pyqtSignal()  # Define a new signal called 'clicked'
+
+    def __init__(self, *args, **kwargs):
+        super(ClickableLabel, self).__init__(*args, **kwargs)
+        self.setCursor(Qt.PointingHandCursor)  # Change cursor to pointing hand
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.clicked.emit()  # Emit the 'clicked' signal when the label is clicked
+        super(ClickableLabel, self).mousePressEvent(event)
+
+
 class Integrations(QMainWindow):
     def __init__(self, parent=None):  # Add parent=None to accept an optional parent parameter
         super().__init__(parent)  # Pass the parent to the superclass __init__
@@ -215,12 +241,32 @@ class Integrations(QMainWindow):
 
         # Sidebar
         self.sidebar = QListWidget()
-        self.sidebar.addItem("Home")
-        self.sidebar.addItem("Integrations")
-        self.sidebar.addItem("Create")
-        self.sidebar.addItem("Settings")
+
+        # Sidebar
+        icons = ['C:/Users/zorer/Downloads/house.png', 'C:/Users/zorer/Downloads/pie-chart.png',
+                 'C:/Users/zorer/Downloads/edit.png',
+                 'C:/Users/zorer/Downloads/settings.png']
+        for i, item_text in enumerate([" Home", " Integrations", " Create", " Settings"]):
+            item = QListWidgetItem(item_text)
+            item.setIcon(QIcon(icons[i]))
+            # Add the item to the sidebar
+            self.sidebar.addItem(item)
+
         self.sidebar.itemClicked.connect(self.onSidebarItemClicked)
         self.sidebar.setFixedWidth(300)
+        self.sidebar.setStyleSheet("""
+                    QListWidget {
+                        background-color: rgba(240,240,240,255);
+                        border: none;
+                    }
+                    QListWidget::item {
+                        color: rgb(277,277,277);
+                        padding-top:220px;
+                        font-size:30px;
+                        font-family: 'Helvetica'; 
+                        font-weight: bold; 
+            }
+                """)
 
         # Grid layout for labels
         gridLayout = QGridLayout()
@@ -228,7 +274,11 @@ class Integrations(QMainWindow):
                  "C:/Users/zorer/Downloads/united.png",
                  "C:/Users/zorer/Downloads/coned.png", "C:/Users/zorer/Downloads/amex.png"]
         for i, logo_path in enumerate(logos):
-            label = QLabel()
+            if i == 0:  # For the first label, use the clickable subclass
+                label = ClickableLabel()
+                label.clicked.connect(getGmail)  # Connect the click event to the getGmail method
+            else:
+                label = QLabel()
             pixmap = QPixmap(logo_path)
             scaled_pixmap = pixmap.scaled(250, 250, Qt.KeepAspectRatio,
                                           Qt.SmoothTransformation)  # Resize to 100x100 while keeping aspect ratio
@@ -249,15 +299,15 @@ class Integrations(QMainWindow):
         self.setCentralWidget(container)
 
     def onSidebarItemClicked(self, item):
-        if item.text() == "Create":
+        if item.text() == " Create":
             self.createNew()
         # elif item.text() in self.sectionInputs:
         #     self.editSection(item.text())
-        if item.text() == "Integrations":
+        if item.text() == " Integrations":
             self.integrationsWindow = Integrations()
             self.integrationsWindow.show()
             self.hide()
-        if item.text() == "Home":
+        if item.text() == " Home":
             self.hide()  # Hide the current window
             self.parent().show()
 

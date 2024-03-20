@@ -37,7 +37,7 @@ def getGmail():
   try:
     # Call the Gmail API
     service = build("gmail", "v1", credentials=creds)
-    results = service.users().messages().list(userId='me', maxResults=10).execute()
+    results = service.users().messages().list(userId='me', maxResults=100).execute()
     messages = results.get('messages', [])
 
     if not messages:
@@ -57,9 +57,11 @@ def getGmail():
       dateObj = parse(dateRaw)
       formatted_date = dateObj.strftime("%Y-%m-%d")
 
-      if (formatted_date=="2024-03-17"):
-        print(f"From: {sender}")
-        print(f"Subject: {subject}\n")
+      # if (formatted_date=="2024-03-19"):
+      print(f"From: {sender}")
+      print(f"Subject: {subject}\n")
+
+    return(subject,sender,formatted_date)
 
   except HttpError as error:
     print(f"An error occurred: {error}")
