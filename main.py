@@ -192,12 +192,27 @@ class AIAssistantGUI(QMainWindow):
 
     def send_query(self):
         userQuery = self.textEdit.toPlainText().replace("Ekin: ", "", 1)  # Remove the "Ekin: " prefix
-
+        tools = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "getGmail",
+                    "description": "Use this function to list the users most recent emails.",
+                     "parameters": {
+                        "type": "object",
+                            "properties": {
+                            # No properties needed since there are no parameters
+                        },
+                }
+            }
+                }
+        ]
         response = self.client.chat.completions.create(
             model="gpt-4",
             messages=[
                 {"role": "user", "content": userQuery}
-            ]
+            ],
+            tools=tools
         )
 
         ai_response = response.choices[0].message.content  # AI's response
